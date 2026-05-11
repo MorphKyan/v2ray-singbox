@@ -3,8 +3,7 @@
     "cache_file": {
       "enabled": true,
       "path": "/etc/ShellCrash/cache.db",
-      "store_fakeip": true,
-      "store_rdrc": true
+      "store_fakeip": true
     }
   },
   // 出站
@@ -19,8 +18,6 @@
     { "tag": "🌎 国外域名", "type": "selector", "outbounds": [ "🚀 节点选择", "🇭🇰 香港节点", "🇹🇼 台湾节点", "🇯🇵 日本节点", "🇸🇬 新加坡节点", "🇺🇸 美国节点", "🆓 免费节点" ] },
     { "tag": "📲 电报消息", "type": "selector", "outbounds": [ "🚀 节点选择", "🇭🇰 香港节点", "🇹🇼 台湾节点", "🇯🇵 日本节点", "🇸🇬 新加坡节点", "🇺🇸 美国节点", "🆓 免费节点" ] },
     { "tag": "🐟 漏网之鱼", "type": "selector", "outbounds": [ "🎯 全球直连", "🚀 节点选择", "🇭🇰 香港节点", "🇹🇼 台湾节点", "🇯🇵 日本节点", "🇸🇬 新加坡节点", "🇺🇸 美国节点", "🆓 免费节点" ] },
-    { "tag": "🛑 广告域名", "type": "selector", "outbounds": [ "🔴 全球拦截", "🎯 全球直连" ] },
-    { "tag": "🔴 全球拦截", "type": "block" },
     { "tag": "🎯 全球直连", "type": "selector", "outbounds": [ "DIRECT" ] },
     { "tag": "DIRECT", "type": "direct" },
     { "tag": "GLOBAL", "type": "selector", "outbounds": [ "🚀 节点选择", "DIRECT" ] },
@@ -42,9 +39,9 @@
     // 自动选择节点，即按照 url 测试结果使用延迟最低的节点；测试后容差大于 50ms 才会切换到延迟低的那个节点；筛选出“香港”节点，支持正则表达式
     { "tag": "🇭🇰 香港节点", "type": "urltest", "include": "(?i)(🇭🇰|港|hk|hongkong|hong kong)" },
     // 节点自动回退，默认选择第一个节点，节点超时后则会按代理顺序选择下一个可用节点，以此类推。也被叫做“故障转移”
-    { "tag": "🇹🇼 台湾节点", "type": "urltest", "use_all_nodes": true, "include": "(?i)(🇹🇼|台|tw|taiwan|tai wan)", "fallback": { "enabled": true } },
+    { "tag": "🇹🇼 台湾节点", "type": "urltest", "use_all_nodes": true, "include": "(?i)(🇹🇼|台|tw|taiwan|tai wan)" },
     // 节点负载均衡，即将请求均匀分配到多个节点上，优点是更稳定，速度可能有提升；将相同的目标地址请求分配给该出站内的同一个节点；推荐在节点复用比较多的情况下使用
-    { "tag": "🇯🇵 日本节点", "type": "loadbalance", "strategy": "consistent-hashing", "include": "(?i)(🇯🇵|日|jp|japan)" },
+    { "tag": "🇯🇵 日本节点", "type": "urltest", "include": "(?i)(🇯🇵|日|jp|japan)" },
     // 可使用 `"use_all_nodes": true` 代替，意思为引入所有出站节点
     { "tag": "🇸🇬 新加坡节点", "type": "urltest", "use_all_nodes": true, "include": "(?i)(🇸🇬|新|sg|singapore)" },
     { "tag": "🇺🇸 美国节点", "type": "urltest", "tolerance": 100, "include": "(?i)(🇺🇸|美|us|unitedstates|united states)" },
@@ -62,12 +59,12 @@
       // 若使用 ShellCrash，可进入 7 → 4 启用域名嗅探后删除此条 `action`
       { "protocol": [ "dns" ], "action": "hijack-dns" },
       // 若使用 ShellCrash，会自动覆写此条，可删除此条 `clash_mode`
-      { "clash_mode": [ "Direct" ], "outbound": "DIRECT" },
+      { "clash_mode": "direct", "outbound": "DIRECT" },
       // 若使用 ShellCrash，会自动覆写此条，可删除此条 `clash_mode`
-      { "clash_mode": [ "Global" ], "outbound": "GLOBAL" },
+      { "clash_mode": "global", "outbound": "GLOBAL" },
       // 自定义规则优先放前面
       { "rule_set": [ "private" ], "outbound": "🎯 全球直连" },
-      { "rule_set": [ "ads" ], "outbound": "🛑 广告域名" },
+      { "rule_set": [ "ads" ], "action": "reject" },
       { "rule_set": [ "games" ], "outbound": "🕹️ 游戏平台" },
       { "rule_set": [ "media" ], "outbound": "🌍 国外媒体" },
       { "rule_set": [ "ai" ], "outbound": "🤖 AI 平台" },
@@ -76,7 +73,7 @@
       { "rule_set": [ "gfw" ], "outbound": "🌎 国外域名" },
       { "rule_set": [ "telegramip" ], "outbound": "📲 电报消息" },
       // 将目标域名解析成 IP 后与下方的 IP 规则进行匹配，提高兼容性
-      { "action": "resolve", "match_only": true },
+      { "action": "resolve" },
       { "rule_set": [ "mediaip" ], "outbound": "🌍 国外媒体" }
     ],
     // 规则集（binary 文件每天自动更新）
@@ -85,7 +82,6 @@
         "tag": "ads",
         "type": "remote",
         "format": "binary",
-        "path": "./ruleset/ads.srs",
         "url": "https://ghproxy.net/https://github.com/DustinWin/ruleset_geodata/releases/download/sing-box-ruleset/ads.srs",
         "download_detour": "DIRECT"
       },
@@ -93,7 +89,6 @@
         "tag": "private",
         "type": "remote",
         "format": "binary",
-        "path": "./ruleset/private.srs",
         "url": "https://ghproxy.net/https://github.com/DustinWin/ruleset_geodata/releases/download/sing-box-ruleset/private.srs",
         "download_detour": "DIRECT"
       },
@@ -101,7 +96,6 @@
         "tag": "games",
         "type": "remote",
         "format": "binary",
-        "path": "./ruleset/games.srs",
         "url": "https://ghproxy.net/https://github.com/DustinWin/ruleset_geodata/releases/download/sing-box-ruleset/games.srs",
         "download_detour": "DIRECT"
       },
@@ -109,7 +103,6 @@
         "tag": "media",
         "type": "remote",
         "format": "binary",
-        "path": "./ruleset/media.srs",
         "url": "https://ghproxy.net/https://github.com/DustinWin/ruleset_geodata/releases/download/sing-box-ruleset/media.srs",
         "download_detour": "DIRECT"
       },
@@ -117,7 +110,6 @@
         "tag": "ai",
         "type": "remote",
         "format": "binary",
-        "path": "./ruleset/ai.srs",
         "url": "https://ghproxy.net/https://github.com/DustinWin/ruleset_geodata/releases/download/sing-box-ruleset/ai.srs",
         "download_detour": "DIRECT"
       },
@@ -125,7 +117,6 @@
         "tag": "networktest",
         "type": "remote",
         "format": "binary",
-        "path": "./ruleset/networktest.srs",
         "url": "https://ghproxy.net/https://github.com/DustinWin/ruleset_geodata/releases/download/sing-box-ruleset/networktest.srs",
         "download_detour": "DIRECT"
       },
@@ -133,7 +124,6 @@
         "tag": "tld-proxy",
         "type": "remote",
         "format": "binary",
-        "path": "./ruleset/tld-proxy.srs",
         "url": "https://ghproxy.net/https://github.com/DustinWin/ruleset_geodata/releases/download/sing-box-ruleset/tld-proxy.srs",
         "download_detour": "DIRECT"
       },
@@ -141,7 +131,6 @@
         "tag": "gfw",
         "type": "remote",
         "format": "binary",
-        "path": "./ruleset/gfw.srs",
         "url": "https://ghproxy.net/https://github.com/DustinWin/ruleset_geodata/releases/download/sing-box-ruleset/gfw.srs",
         "download_detour": "DIRECT"
       },
@@ -149,7 +138,6 @@
         "tag": "telegramip",
         "type": "remote",
         "format": "binary",
-        "path": "./ruleset/telegramip.srs",
         "url": "https://ghproxy.net/https://github.com/DustinWin/ruleset_geodata/releases/download/sing-box-ruleset/telegramip.srs",
         "download_detour": "DIRECT"
       },
@@ -157,7 +145,6 @@
         "tag": "mediaip",
         "type": "remote",
         "format": "binary",
-        "path": "./ruleset/mediaip.srs",
         "url": "https://ghproxy.net/https://github.com/DustinWin/ruleset_geodata/releases/download/sing-box-ruleset/mediaip.srs",
         "download_detour": "DIRECT"
       }
