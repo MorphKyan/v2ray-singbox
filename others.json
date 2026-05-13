@@ -1,1 +1,0 @@
-{ "experimental": { "cache_file": { "enabled": true, "path": "/etc/ShellCrash/cache.db", "store_fakeip": true, "store_rdrc": true } } }
