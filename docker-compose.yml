@@ -1,0 +1,11 @@
+services:
+  v2ray-singbox:
+    build: .
+    container_name: v2ray-singbox
+    ports:
+      - "3000:3000"
+    environment:
+      - PORT=3000
+    volumes:
+      - ./template.yaml:/app/template.yaml
+    restart: unless-stopped
